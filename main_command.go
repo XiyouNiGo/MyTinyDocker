@@ -59,8 +59,9 @@ var runCommand = cli.Command{
 			CpuShare:    context.String("cpushare"),
 		}
 
+		containerName := context.String("name")
 		volume := context.String("v")
-		Run(createTty, cmdArray, resConf, volume)
+		Run(createTty, cmdArray, resConf, containerName, volume)
 		return nil
 	},
 }
@@ -84,6 +85,28 @@ var commitCommand = cli.Command{
 		}
 		imageName := context.Args().Get(0)
 		commitContainer(imageName)
+		return nil
+	},
+}
+
+var listCommand = cli.Command{
+	Name:  "ps",
+	Usage: "list all the containers",
+	Action: func(context *cli.Context) error {
+		ListContainers()
+		return nil
+	},
+}
+
+var logCommand = cli.Command{
+	Name:  "logs",
+	Usage: "print logs of a container",
+	Action: func(context *cli.Context) error {
+		if len(context.Args()) < 1 {
+			return fmt.Errorf("Please input your container name")
+		}
+		containerName := context.Args().Get(0)
+		logContainer(containerName)
 		return nil
 	},
 }
