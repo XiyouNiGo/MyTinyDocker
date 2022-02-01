@@ -19,16 +19,20 @@ var runCommand = cli.Command{
 			Usage: "enable tty",
 		},
 		cli.StringFlag{
-			Name: "m",
+			Name:  "m",
 			Usage: "memory limit",
 		},
 		cli.StringFlag{
-			Name: "cpushare",
+			Name:  "cpushare",
 			Usage: "cpushare limit",
 		},
 		cli.StringFlag{
-			Name: "cpuset",
+			Name:  "cpuset",
 			Usage: "cpuset limit",
+		},
+		cli.StringFlag{
+			Name:  "v",
+			Usage: "volume",
 		},
 	},
 	Action: func(context *cli.Context) error {
@@ -42,11 +46,12 @@ var runCommand = cli.Command{
 		tty := context.Bool("ti")
 		resConf := &subsystems.ResourceConfig{
 			MemoryLimit: context.String("m"),
-			CpuSet: context.String("cpuset"),
-			CpuShare:context.String("cpushare"),
+			CpuSet:      context.String("cpuset"),
+			CpuShare:    context.String("cpushare"),
 		}
 
-		Run(tty, cmdArray, resConf)
+		volume := context.String("v")
+		Run(tty, cmdArray, resConf, volume)
 		return nil
 	},
 }
