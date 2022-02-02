@@ -14,7 +14,7 @@ var (
 	RUNNING             string = "running"
 	STOP                string = "stopped"
 	Exit                string = "exited"
-	DefaultInfoLocation string = "/var/run/mydocker/%s/"
+	DefaultInfoLocation string = "/var/run/mytinydocker/%s/"
 	ConfigName          string = "config.json"
 	ContainerLogFile    string = "container.log"
 )

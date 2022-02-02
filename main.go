@@ -20,11 +20,11 @@ func main() {
 		logCommand,
 		listCommand,
 		commitCommand,
+		execCommand,
 	}
 
 	app.Before = func(context *cli.Context) error {
 		log.SetFormatter(&log.JSONFormatter{})
-
 		log.SetOutput(os.Stdout)
 		return nil
 	}
