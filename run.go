@@ -15,9 +15,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string) {
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string, envSlice []string) {
 	containerID := randStringBytes(10)
-	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName)
+	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName, envSlice)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -26,7 +26,6 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		log.Error(err)
 	}
 
-	//record container info
 	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)

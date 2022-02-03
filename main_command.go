@@ -39,6 +39,10 @@ var runCommand = cli.Command{
 			Name:  "d",
 			Usage: "detach container",
 		},
+		cli.StringSliceFlag{
+			Name:  "e",
+			Usage: "set environment",
+		},
 	},
 	Action: func(context *cli.Context) error {
 		if len(context.Args()) < 1 {
@@ -66,7 +70,8 @@ var runCommand = cli.Command{
 
 		containerName := context.String("name")
 		volume := context.String("v")
-		Run(createTty, cmdArray, resConf, containerName, volume, imageName)
+		envSlice := context.StringSlice("e")
+		Run(createTty, cmdArray, resConf, containerName, volume, imageName, envSlice)
 		return nil
 	},
 }
