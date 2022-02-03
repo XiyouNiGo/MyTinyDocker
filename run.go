@@ -15,9 +15,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume string) {
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string) {
 	containerID := randStringBytes(10)
-	parent, writePipe := container.NewParentProcess(tty, containerName, volume)
+	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName)
 	if parent == nil {
 		log.Errorf("New parent process error")
 		return
@@ -27,7 +27,7 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	}
 
 	//record container info
-	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID)
+	containerName, err := recordContainerInfo(parent.Process.Pid, comArray, containerName, containerID, volume)
 	if err != nil {
 		log.Errorf("Record container info error %v", err)
 		return
@@ -42,11 +42,8 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 	if tty {
 		parent.Wait()
 		deleteContainerInfo(containerName)
+		container.DeleteWorkSpace(volume, containerName)
 	}
-	mntURL := "/root/mnt"
-	rootURL := "/root"
-	container.DeleteWorkSpace(rootURL, mntURL, volume)
-	os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {
@@ -56,7 +53,7 @@ func sendInitCommand(comArray []string, writePipe *os.File) {
 	writePipe.Close()
 }
 
-func recordContainerInfo(containerPID int, commandArray []string, containerName string, id string) (string, error) {
+func recordContainerInfo(containerPID int, commandArray []string, containerName, id, volume string) (string, error) {
 	createTime := time.Now().Format("2006-01-02 15:04:05")
 	command := strings.Join(commandArray, "")
 	containerInfo := &container.ContainerInfo{
@@ -66,6 +63,7 @@ func recordContainerInfo(containerPID int, commandArray []string, containerName 
 		CreatedTime: createTime,
 		Status:      container.RUNNING,
 		Name:        containerName,
+		Volume:      volume,
 	}
 
 	jsonBytes, err := json.Marshal(containerInfo)
