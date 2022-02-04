@@ -22,13 +22,14 @@ var (
 )
 
 type ContainerInfo struct {
-	Pid         string `json:"pid"`
-	Id          string `json:"id"`
-	Name        string `json:"name"`
-	Command     string `json:"command"`
-	CreatedTime string `json:"createTime"`
-	Status      string `json:"status"`
-	Volume      string `json:"volume"`
+	Pid         string   `json:"pid"`
+	Id          string   `json:"id"`
+	Name        string   `json:"name"`
+	Command     string   `json:"command"`
+	CreatedTime string   `json:"createTime"`
+	Status      string   `json:"status"`
+	Volume      string   `json:"volume"`
+	PortMapping []string `json:"portmapping"`
 }
 
 func NewParentProcess(tty bool, containerName string, volume, imageName string, envSlice []string) (*exec.Cmd, *os.File) {
@@ -37,7 +38,13 @@ func NewParentProcess(tty bool, containerName string, volume, imageName string, 
 		log.Errorf("New pipe error %v", err)
 		return nil, nil
 	}
-	cmd := exec.Command("/proc/self/exe", "init")
+	initCmd, err := os.Readlink("/proc/self/exe")
+	if err != nil {
+		log.Errorf("get init process error %v", err)
+		return nil, nil
+	}
+
+	cmd := exec.Command(initCmd, "init")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS |
 			syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,

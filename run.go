@@ -12,10 +12,11 @@ import (
 	"github.com/XiyouNiGo/MyTinyDocker/cgroups"
 	"github.com/XiyouNiGo/MyTinyDocker/cgroups/subsystems"
 	"github.com/XiyouNiGo/MyTinyDocker/container"
+	"github.com/XiyouNiGo/MyTinyDocker/network"
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string, envSlice []string) {
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerName, volume, imageName string, envSlice []string, nw string, portmapping []string) {
 	containerID := randStringBytes(10)
 	parent, writePipe := container.NewParentProcess(tty, containerName, volume, imageName, envSlice)
 	if parent == nil {
@@ -32,10 +33,25 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig, containerN
 		return
 	}
 
-	cgroupManager := cgroups.NewCgroupManager("mytinydocker-cgroup")
+	cgroupManager := cgroups.NewCgroupManager(containerID)
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
+
+	if nw != "" {
+		// config container network
+		network.Init()
+		containerInfo := &container.ContainerInfo{
+			Id:          containerID,
+			Pid:         strconv.Itoa(parent.Process.Pid),
+			Name:        containerName,
+			PortMapping: portmapping,
+		}
+		if err := network.Connect(nw, containerInfo); err != nil {
+			log.Errorf("Error Connect Network %v", err)
+			return
+		}
+	}
 
 	sendInitCommand(comArray, writePipe)
 	if tty {

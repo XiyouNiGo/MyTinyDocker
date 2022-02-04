@@ -23,6 +23,7 @@ func main() {
 		stopCommand,
 		removeCommand,
 		commitCommand,
+		networkCommand,
 	}
 
 	app.Before = func(context *cli.Context) error {
